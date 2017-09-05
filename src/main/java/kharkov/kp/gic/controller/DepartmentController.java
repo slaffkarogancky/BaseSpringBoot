@@ -1,7 +1,6 @@
 package kharkov.kp.gic.controller;
 
 import java.net.URI;
-import java.util.List;
 
 import javax.validation.Valid;
 
@@ -37,7 +36,7 @@ public class DepartmentController {
 	@Autowired
 	DepartmentValidator departmentValidator;
 
-	@InitBinder("department")
+	@InitBinder//("department")
 	protected void setupBinder(WebDataBinder binder) {
 		binder.setValidator(departmentValidator);
 	}
