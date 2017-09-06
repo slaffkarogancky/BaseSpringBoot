@@ -1,5 +1,6 @@
 package kharkov.kp.gic.controller;
 
+import java.io.IOException;
 import java.net.URI;
 
 import javax.validation.Valid;
@@ -20,11 +21,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import kharkov.kp.gic.domain.Department;
+import kharkov.kp.gic.domain.DepartmentScan;
 import kharkov.kp.gic.exception.ResourceWasNotFoundedException;
 import kharkov.kp.gic.service.PersonnelService;
+import kharkov.kp.gic.utils.Utils;
 import kharkov.kp.gic.validator.DepartmentValidator;
 
 @RestController
@@ -91,6 +95,45 @@ public class DepartmentController {
 	public ResponseEntity<?> deleteDepartment(@PathVariable int id) {
 		personnelService.deleteDepartment(id);
 		return new ResponseEntity<>(HttpStatus.OK);
+	}	
+	
+	// http://localhost:2017/personnel/api/v1/departments/1/blob
+	@PostMapping(value = "/departments/{id}/blob")
+	public ResponseEntity<?> saveDepartmentScan(@PathVariable int id, @RequestParam("file") MultipartFile file) {
+		try
+		{		
+			int scanId = personnelService.saveDepartmentScan(id, file.getOriginalFilename(), file.getBytes());
+			HttpHeaders responseHeaders = new HttpHeaders();
+			// @formatter:off
+			URI newDepartmentUri = ServletUriComponentsBuilder.fromCurrentRequest()
+															  .path("/{id}")
+															  .buildAndExpand(scanId).toUri();
+			// @formatter:on
+			responseHeaders.setLocation(newDepartmentUri);
+			return new ResponseEntity<>(null, responseHeaders, HttpStatus.CREATED);
+		}
+		catch (IOException ioe) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }		
+	}
+	
+	// http://localhost:2017/personnel/api/v1/departments/1/blob/1
+	@GetMapping(value = "/departments/{depid}/blob/{blobid}")
+	public ResponseEntity<byte[]> getDepartmentScan(@PathVariable int depid, @PathVariable int blobid) {
+		DepartmentScan scan = personnelService.getDepartmentScan(blobid);
+		if (scan == null) {
+			throw new ResourceWasNotFoundedException("Scan with id " + blobid + " not found");
+		}
+		if (scan.getDepartment() == null || scan.getDepartment().getId() != depid) {
+			throw new ResourceWasNotFoundedException("Department with id " + depid + " not found");
+		}		
+		HttpHeaders headers = new HttpHeaders();				
+		MediaType mediaType = Utils.getMediaTypeByExt(scan.getScanExt());		
+		String disposition = (mediaType == null ? "attachment; filename=" : "inline; filename=") + scan.getScanName();
+		headers.setContentType(mediaType == null ? MediaType.APPLICATION_OCTET_STREAM : mediaType);
+		headers.set("Content-Disposition", disposition);
+		headers.setContentLength(scan.getContent().length);
+		return new ResponseEntity<byte[]>(scan.getContent(), headers, HttpStatus.OK);
 	}
 
 }
