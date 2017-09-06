@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -48,7 +49,7 @@ public class DepartmentController {
 	}
 
 	// http://localhost:2017/personnel/api/v1/departments
-	@GetMapping(value = "/departments")
+	@GetMapping(value = "/departments", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Iterable<Department>> getAllDepartments(
 			@RequestParam(name = "page", required = false, defaultValue = "0") int page,
 			@RequestParam(name = "size", required = false, defaultValue = "0") int size) {
@@ -57,7 +58,7 @@ public class DepartmentController {
 	}
 
 	// http://localhost:2017/personnel/api/v1/departments/1
-	@GetMapping(value = "/departments/{id}")
+	@GetMapping(value = "/departments/{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Department> getDepartment(@PathVariable int id) {		
 		Department department = personnelService.getDepartmentById(id);
 		if (department == null) {
