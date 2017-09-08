@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 import kharkov.kp.gic.domain.Userok;
 import kharkov.kp.gic.repository.UserokRepository;
 
-import static java.util.Collections.emptyList;
-
 import java.util.ArrayList;
 import java.util.List;
 
