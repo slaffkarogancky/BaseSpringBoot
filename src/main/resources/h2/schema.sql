@@ -4,9 +4,19 @@ create sequence GR_GEN_EMPLOYEE_ID minvalue 1 start with 1 increment by 1 cache 
 create sequence GR_GEN_LANGUAGE_ID minvalue 1 start with 1 increment by 1 cache 1;
 create sequence GR_GEN_LANGUAGE_LINK_ID minvalue 1 start with 1 increment by 1 cache 1;
 create sequence GR_GEN_SCAN_ID minvalue 1 start with 1 increment by 1 cache 1;
+create sequence GR_GEN_USER_ID minvalue 1 start with 1 increment by 1 cache 1;
 
 
 ------------------------ create table ----------------------------------
+create table GR_USER (
+  user_id number(10) primary key, -- GR_GEN_USER_ID  
+  user_name varchar2(250) not null unique,
+  user_password varchar2(250) not null,
+  user_description varchar2(1000) null,
+  is_operator number(1) default 0 not null,
+  is_admin number(1) default 0 not null  
+);
+
 create table GR_DEPARTMENT (
   department_id number(10) primary key, -- GR_GEN_DEPARTMENT_ID
   department_name varchar2(1000) not null unique

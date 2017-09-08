@@ -10,6 +10,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,6 +55,7 @@ public class DepartmentController {
 	}
 
 	// http://localhost:2017/personnel/api/v1/departments
+	@Secured("ROLE_OPERATOR")
 	@GetMapping(value = "/departments", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Iterable<Department>> getAllDepartments(
 			@RequestParam(name = "page", required = false, defaultValue = "0") int page,
@@ -62,6 +65,7 @@ public class DepartmentController {
 	}
 
 	// http://localhost:2017/personnel/api/v1/departments/1
+	@Secured("ROLE_OPERATOR")
 	@GetMapping(value = "/departments/{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Department> getDepartment(@PathVariable int id) {		
 		Department department = personnelService.getDepartmentById(id);
@@ -71,6 +75,7 @@ public class DepartmentController {
 		return new ResponseEntity<>(department, HttpStatus.OK);
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping(value = "/departments")
 	public ResponseEntity<?> createDepartment(@Valid @RequestBody Department department) {
 		int createdDepId = personnelService.createDepartment(department);
@@ -84,6 +89,7 @@ public class DepartmentController {
 		return new ResponseEntity<>(null, responseHeaders, HttpStatus.CREATED);
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PutMapping(value = "/departments/{id}")
 	public ResponseEntity<?> updateDepartment(@Valid @RequestBody Department department, @PathVariable int id) {
 		department.setId(id);
@@ -91,6 +97,7 @@ public class DepartmentController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	@Secured("ROLE_ADMIN")
 	@DeleteMapping(value = "/departments/{id}")
 	public ResponseEntity<?> deleteDepartment(@PathVariable int id) {
 		personnelService.deleteDepartment(id);
@@ -98,6 +105,7 @@ public class DepartmentController {
 	}	
 	
 	// http://localhost:2017/personnel/api/v1/departments/1/blob
+	@Secured("ROLE_ADMIN")
 	@PostMapping(value = "/departments/{id}/blob")
 	public ResponseEntity<?> saveDepartmentScan(@PathVariable int id, @RequestParam("file") MultipartFile file) {
 		try
@@ -118,6 +126,7 @@ public class DepartmentController {
 	}
 	
 	// http://localhost:2017/personnel/api/v1/departments/1/blob/1
+	@Secured("ROLE_OPERATOR")
 	@GetMapping(value = "/departments/{depid}/blob/{blobid}")
 	public ResponseEntity<byte[]> getDepartmentScan(@PathVariable int depid, @PathVariable int blobid) {
 		DepartmentScan scan = personnelService.getDepartmentScan(blobid);

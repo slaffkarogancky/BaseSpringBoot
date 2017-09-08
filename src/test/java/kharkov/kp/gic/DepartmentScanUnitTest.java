@@ -15,7 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -27,32 +30,43 @@ public class DepartmentScanUnitTest {
 
 	@Autowired
 	private MockMvc mockMvc;
+	
+	// тестовый токен, действителен до 7.09.2018
+	private String token = "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJiYXJpbiIsImV4cCI6MTgyMDE0NzU4MX0.eeiNrWBX7NbhAr6jBhKJuEpu9Jq3GOXt6NZaaSfZlWHXeyLV5u8S4p0G766GpDA6Q3QZQKF2DaJc-qxGoGoZkw";
 
 	@Test
 	public void _a() throws Exception {		
 		MockMultipartFile multipartFile = _createMultipartFile("alpha.jpg");
-		mockMvc.perform(fileUpload("/personnel/api/v1/departments/1/blob").file(multipartFile))
+		mockMvc.perform(fileUpload("/personnel/api/v1/departments/1/blob")
+				.file(multipartFile)
+				.header(HttpHeaders.AUTHORIZATION, token))
 				.andExpect(status().isCreated());
 	}
 	
 	@Test
 	public void _aa() throws Exception {		
 		MockMultipartFile multipartFile = _createMultipartFile("beta.jpg");
-		mockMvc.perform(fileUpload("/personnel/api/v1/departments/1/blob").file(multipartFile))
+		mockMvc.perform(fileUpload("/personnel/api/v1/departments/1/blob")
+				.file(multipartFile)
+				.header(HttpHeaders.AUTHORIZATION, token))
 				.andExpect(status().isCreated());
 	}	
 	
 	@Test
 	public void _aaa() throws Exception {		
 		MockMultipartFile multipartFile = _createMultipartFile("gamma.jpg");
-		mockMvc.perform(fileUpload("/personnel/api/v1/departments/1/blob").file(multipartFile))
+		mockMvc.perform(fileUpload("/personnel/api/v1/departments/1/blob")
+				.file(multipartFile)
+				.header(HttpHeaders.AUTHORIZATION, token))
 				.andExpect(status().isCreated());
 	}
 	
 	@Test
 	public void _aaaa() throws Exception {		
 		MockMultipartFile multipartFile = _createMultipartFile("tutorial.pdf");
-		mockMvc.perform(fileUpload("/personnel/api/v1/departments/1/blob").file(multipartFile))
+		mockMvc.perform(fileUpload("/personnel/api/v1/departments/1/blob")
+				.file(multipartFile)
+				.header(HttpHeaders.AUTHORIZATION, token))
 				.andExpect(status().isCreated());
 	}	
 	

@@ -37,8 +37,10 @@ public class PersonnelService {
 	@Transactional(readOnly = true)
 	public Department getDepartmentById(int id) {
 		Department department = _departmentRepository.findOne(id);
-		@SuppressWarnings("unused")
-		int count = department.getScans().size(); // fetch all scans
+		if (department != null) {
+			@SuppressWarnings("unused")
+			int count = department.getScans().size(); // fetch all scans
+		}
 		return department;
 	}
 	

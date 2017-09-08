@@ -7,6 +7,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+import java.util.UUID;
+
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
 
@@ -19,8 +23,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
@@ -40,7 +51,7 @@ public class DepartmentUnitTest {
 	
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
-
+	
 	private JacksonTester<Department> json;
 	
 	@Before
@@ -49,10 +60,14 @@ public class DepartmentUnitTest {
 		JacksonTester.initFields(this, objectMapper);
 	}
 	
+	// тестовый токен, действителен до 7.09.2018
+	private String token = "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJiYXJpbiIsImV4cCI6MTgyMDE0NzU4MX0.eeiNrWBX7NbhAr6jBhKJuEpu9Jq3GOXt6NZaaSfZlWHXeyLV5u8S4p0G766GpDA6Q3QZQKF2DaJc-qxGoGoZkw";
+	
 	// проверяем, что сервер пингуется
 	@Test
 	public void _a() throws Exception {
-		mockMvc.perform(get("/personnel/api/v1/ping"))
+		mockMvc.perform(get("/personnel/api/v1/ping")
+				.header(HttpHeaders.AUTHORIZATION, token))
 				.andExpect(status().isOk())
 				.andExpect(content().string("PONG"));
 	}
@@ -61,7 +76,8 @@ public class DepartmentUnitTest {
 	@Test
 	public void _b() throws Exception {
 		mockMvc.perform(get("/personnel/api/v1/departments/1")
-				.accept(MediaType.APPLICATION_JSON_VALUE))
+				.accept(MediaType.APPLICATION_JSON_VALUE)
+				.header(HttpHeaders.AUTHORIZATION, token))
 				.andExpect(status().isOk())
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andExpect(jsonPath("$.id").value(1))
@@ -72,7 +88,8 @@ public class DepartmentUnitTest {
 	@Test
 	public void _c() throws Exception {
 		mockMvc.perform(get("/personnel/api/v1/departments/100000000")
-				.accept(MediaType.APPLICATION_JSON_VALUE))
+				.accept(MediaType.APPLICATION_JSON_VALUE)
+				.header(HttpHeaders.AUTHORIZATION, token))
 				.andExpect(status().isNotFound());
 	}
 	
@@ -80,7 +97,8 @@ public class DepartmentUnitTest {
 	@Test
 	public void _d() throws Exception {
 		mockMvc.perform(get("/personnel/api/v1/departments")
-				.accept(MediaType.APPLICATION_JSON_VALUE))
+				.accept(MediaType.APPLICATION_JSON_VALUE)
+				.header(HttpHeaders.AUTHORIZATION, token))
 				.andExpect(status().isOk())
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andExpect(jsonPath("$", hasSize(5)))
@@ -99,7 +117,8 @@ public class DepartmentUnitTest {
 		mockMvc.perform(post("/personnel/api/v1/departments")
 				.content(departmentContent)
 				.contentType(MediaType.APPLICATION_JSON_VALUE)
-				.accept(MediaType.APPLICATION_JSON_VALUE))
+				.accept(MediaType.APPLICATION_JSON_VALUE)
+				.header(HttpHeaders.AUTHORIZATION, token))
 				.andExpect(status().isCreated());
 		int after = JdbcTestUtils.countRowsInTable(jdbcTemplate, "gr_department");
 		assertTrue("Количество департаментов должно увеличиться на единицу", after - before == 1);
@@ -112,7 +131,8 @@ public class DepartmentUnitTest {
 		mockMvc.perform(post("/personnel/api/v1/departments")
 				.content("{\"departmentName\": \"\"}")
 				.contentType(MediaType.APPLICATION_JSON_VALUE)
-				.accept(MediaType.APPLICATION_JSON_VALUE))
+				.accept(MediaType.APPLICATION_JSON_VALUE)
+				.header(HttpHeaders.AUTHORIZATION, token))
 				.andExpect(status().isBadRequest());
 		int after = JdbcTestUtils.countRowsInTable(jdbcTemplate, "gr_department");
 		assertTrue("Количество департаментов должно остаться неизменным", after - before == 0);
@@ -124,7 +144,8 @@ public class DepartmentUnitTest {
 		mockMvc.perform(post("/personnel/api/v1/departments")
 				.content("{\"departmentName\": \"Отдел тестирования ПО\"}")
 				.contentType(MediaType.APPLICATION_JSON_VALUE)
-				.accept(MediaType.APPLICATION_JSON_VALUE))
+				.accept(MediaType.APPLICATION_JSON_VALUE)
+				.header(HttpHeaders.AUTHORIZATION, token))
 				.andExpect(status().isBadRequest());
 	}
 	
@@ -137,7 +158,8 @@ public class DepartmentUnitTest {
 		mockMvc.perform(put("/personnel/api/v1/departments/1")
 				.content(departmentContent)
 				.contentType(MediaType.APPLICATION_JSON_VALUE)
-				.accept(MediaType.APPLICATION_JSON_VALUE))
+				.accept(MediaType.APPLICATION_JSON_VALUE)
+				.header(HttpHeaders.AUTHORIZATION, token))
 				.andExpect(status().isOk());
 		int after = JdbcTestUtils.countRowsInTable(jdbcTemplate, "gr_department");
 		assertTrue("Количество департаментов должно остаться неизменным", after - before == 0);
@@ -151,7 +173,8 @@ public class DepartmentUnitTest {
 		mockMvc.perform(put("/personnel/api/v1/departments/4")
 				.content(departmentContent)
 				.contentType(MediaType.APPLICATION_JSON_VALUE)
-				.accept(MediaType.APPLICATION_JSON_VALUE))
+				.accept(MediaType.APPLICATION_JSON_VALUE)
+				.header(HttpHeaders.AUTHORIZATION, token))
 				.andExpect(status().isBadRequest());
 	}
 	
@@ -160,7 +183,8 @@ public class DepartmentUnitTest {
 	public void _j() throws Exception {
 		int before = JdbcTestUtils.countRowsInTable(jdbcTemplate, "gr_department");
 		mockMvc.perform(delete("/personnel/api/v1/departments/1")
-				.accept(MediaType.APPLICATION_JSON_VALUE))
+				.accept(MediaType.APPLICATION_JSON_VALUE)
+				.header(HttpHeaders.AUTHORIZATION, token))
 				.andExpect(status().isOk());
 		int after = JdbcTestUtils.countRowsInTable(jdbcTemplate, "gr_department");
 		assertTrue("Количество департаментов должно уменьшиться на единицу", before - after == 1);
