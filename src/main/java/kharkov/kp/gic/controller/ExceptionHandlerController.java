@@ -4,25 +4,26 @@ import java.util.Date;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolationException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import kharkov.kp.gic.exception.ResourceWasNotFoundedException;
+import kharkov.kp.gic.exception.EntityWasNotFoundedException;
 import lombok.Builder;
 import lombok.Data;
 
 @ControllerAdvice
-public class ExceptionHandlerController {
+public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
 
-	@ExceptionHandler(ResourceWasNotFoundedException.class)
-	public ResponseEntity<?> handleException(ResourceWasNotFoundedException rwnfe, HttpServletRequest request) {
+	// Обрабатываем пользовательское исключение, не предусмотренное в ResponseEntityExceptionHandler
+	@ExceptionHandler(EntityWasNotFoundedException.class)
+	public ResponseEntity<?> handleEntityWasNotFoundedException(EntityWasNotFoundedException rwnfe, HttpServletRequest request) {
 		// @formatter:off
 		ErrorDetail errorDetail = ErrorDetail.builder()
 											 .eventDate(new Date())
@@ -33,30 +34,28 @@ public class ExceptionHandlerController {
 		// @formatter:on
 		return new ResponseEntity<>(errorDetail, null, HttpStatus.NOT_FOUND);
 	}
-
-	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<?> processValidationError(MethodArgumentNotValidException manve, HttpServletRequest request) {
+	
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ResponseEntity<?> handleConstraintViolationException(ConstraintViolationException cve, HttpServletRequest request) {
 		// @formatter:off
-		String userMessage = manve.getBindingResult()
-								  .getAllErrors()
-								  .stream()
-								  .map(ObjectError::getDefaultMessage)
-								  .collect(Collectors.joining("; "));	
+		String message = cve.getConstraintViolations()
+						    .stream()
+						    .map(cv -> String.format("Field=\"%s\", error=\"%s\"", cv.getPropertyPath(), cv.getMessage()))
+						    .collect(Collectors.joining("; "));	
 		ErrorDetail errorDetail = ErrorDetail.builder()
 											 .eventDate(new Date())
-											 .path(_getRequestPath(request))
 											 .status(HttpStatus.BAD_REQUEST.value())
-											 .userMessage(userMessage)
+											 .path(_getRequestPath(request))
+											 .userMessage(message)
 											 .build();
-		// @formatter:on
+		// @formatter:on		
 		return new ResponseEntity<>(errorDetail, null, HttpStatus.BAD_REQUEST);
 	}
-
+	
 	private String _getRequestPath(HttpServletRequest request) {
 		String requestPath = (String) request.getAttribute("javax.servlet.error.request_uri");
 		return requestPath == null ? request.getRequestURI() : requestPath;
 	}
-
 }
 
 @Data

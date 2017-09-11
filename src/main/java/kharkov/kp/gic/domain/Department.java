@@ -11,6 +11,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import kharkov.kp.gic.validator.NoObsceneLexis;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,6 +30,7 @@ public class Department {
 	private Integer id;
 	
 	@Column(name="department_name")
+	@NoObsceneLexis
 	private String departmentName;
 	
 	@OneToMany(mappedBy = "department")

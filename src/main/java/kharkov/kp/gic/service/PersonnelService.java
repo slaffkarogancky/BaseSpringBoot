@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import kharkov.kp.gic.domain.Department;
 import kharkov.kp.gic.domain.DepartmentScan;
-import kharkov.kp.gic.exception.ResourceWasNotFoundedException;
+import kharkov.kp.gic.exception.EntityWasNotFoundedException;
 import kharkov.kp.gic.repository.DepartmentRepository;
 import kharkov.kp.gic.repository.DepartmentScanRepository;
 import kharkov.kp.gic.utils.Utils;
@@ -69,7 +69,7 @@ public class PersonnelService {
 	public int saveDepartmentScan(int departmentId, String fileName, byte[] content) {
 		Department department = _departmentRepository.findOne(departmentId);
 		if (department == null) {
-			throw new ResourceWasNotFoundedException("Department with id " + departmentId + " not found");
+			throw new EntityWasNotFoundedException("Department with id " + departmentId + " not found");
 		}
 		String fileExt = Utils.getFileExtension(fileName);	
 		DepartmentScan scan = DepartmentScan.builder()

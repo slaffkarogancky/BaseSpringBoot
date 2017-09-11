@@ -31,8 +31,9 @@ public class PersonnelWebSecurity extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and() .csrf().disable()
     		.authorizeRequests()
-            .antMatchers(HttpMethod.POST, SIGN_UP_URL)
-            .permitAll()
+    		.antMatchers("/personnel/api/v1/ping").permitAll()
+    		.antMatchers("/**/*swagger*/**", "/v2/api-docs/**").permitAll()
+            .antMatchers(HttpMethod.POST, SIGN_UP_URL).permitAll()
             .anyRequest()
             .authenticated()
             .and()

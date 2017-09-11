@@ -27,7 +27,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import kharkov.kp.gic.domain.Department;
 import kharkov.kp.gic.domain.DepartmentScan;
-import kharkov.kp.gic.exception.ResourceWasNotFoundedException;
+import kharkov.kp.gic.exception.EntityWasNotFoundedException;
 import kharkov.kp.gic.service.PersonnelService;
 import kharkov.kp.gic.utils.Utils;
 import kharkov.kp.gic.validator.DepartmentValidator;
@@ -69,7 +69,7 @@ public class DepartmentController {
 	public ResponseEntity<Department> getDepartment(@PathVariable int id) {		
 		Department department = personnelService.getDepartmentById(id);
 		if (department == null) {
-			throw new ResourceWasNotFoundedException("Department with id " + id + " not found");
+			throw new EntityWasNotFoundedException("Department with id " + id + " not found");
 		}
 		return new ResponseEntity<>(department, HttpStatus.OK);
 	}
@@ -130,10 +130,10 @@ public class DepartmentController {
 	public ResponseEntity<byte[]> getDepartmentScan(@PathVariable int depid, @PathVariable int blobid) {
 		DepartmentScan scan = personnelService.getDepartmentScan(blobid);
 		if (scan == null) {
-			throw new ResourceWasNotFoundedException("Scan with id " + blobid + " not found");
+			throw new EntityWasNotFoundedException("Scan with id " + blobid + " not found");
 		}
 		if (scan.getDepartment() == null || scan.getDepartment().getId() != depid) {
-			throw new ResourceWasNotFoundedException("Department with id " + depid + " not found");
+			throw new EntityWasNotFoundedException("Department with id " + depid + " not found");
 		}		
 		HttpHeaders headers = new HttpHeaders();				
 		MediaType mediaType = Utils.getMediaTypeByExt(scan.getScanExt());		
